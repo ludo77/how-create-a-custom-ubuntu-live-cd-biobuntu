@@ -1,75 +1,72 @@
-# how-create-a-custom-ubuntu-live-cd 
+# how-create-a-custom-ubuntu-live-cd minimal Biobuntu
 
 I use this for create my own version ubuntu: https://itnext.io/how-to-create-a-custom-ubuntu-live-from-scratch-dd3b3f213f81
 
-# Prerequisites (GNU/Linux Debian/Ubuntu)
+1) Prerequisites (GNU/Linux Debian/Ubuntu)
 
-sudo apt-get install \
-    binutils \
-    debootstrap \
-    squashfs-tools \
-    xorriso \
-    grub-pc-bin \
-    grub-efi-amd64-bin \
-    mtools
+sudo apt-get install binutils debootstrap squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools
     
 mkdir $HOME/live-ubuntu-from-scratch
 
 
-# Bootstrap
+2) Bootstrap
 
-sudo debootstrap \
-    --arch=amd64 \
-    --variant=minbase \
-    bionic \
-    $HOME/live-ubuntu-from-scratch/chroot \
-    http://us.archive.ubuntu.com/ubuntu/
+sudo debootstrap --arch=amd64 --variant=minbase bionic $HOME/live-ubuntu-from-scratch/chroot http://us.archive.ubuntu.com/ubuntu/
  
  
-# Configure external mount points
+3) Configure external mount points
 
 sudo mount --bind /dev $HOME/live-ubuntu-from-scratch/chroot/dev
+
 sudo mount --bind /run $HOME/live-ubuntu-from-scratch/chroot/run
 
-# enter in CHROOT
-# Access chroot environment
+4) Access chroot environment
 
 sudo chroot $HOME/live-ubuntu-from-scratch/chroot
 
-# Configure mount points, home and locale
+5) Configure mount points, home and locale
 
 mount none -t proc /proc
+
 mount none -t sysfs /sys
+
 mount none -t devpts /dev/pts
+
 export HOME=/root
+
 export LC_ALL=C
 
-# Set a custom hostname
+5) Set a custom hostname
 
 echo "biobuntu-live" > /etc/hostname
 
-# Configure apt sources.list
+6) Configure apt sources.list
 
 cat <<EOF > /etc/apt/sources.list
+
 deb http://archive.ubuntu.com/ubuntu/ bionic main restricted universe multiverse 
+
 deb-src http://archive.ubuntu.com/ubuntu/ bionic main restricted universe multiverse
 
 deb http://archive.ubuntu.com/ubuntu/ bionic-security main restricted universe multiverse 
+
 deb-src http://archive.ubuntu.com/ubuntu/ bionic-security main restricted universe multiverse
 
 deb http://archive.ubuntu.com/ubuntu/ bionic-updates main restricted universe multiverse 
+
 deb-src http://archive.ubuntu.com/ubuntu/ bionic-updates main restricted universe multiverse 
+
 EOF
 
-# update packages
+7) update packages
 
 apt-get update
 
-# Install systemd
+8) Install systemd
 
 apt-get install -y systemd-sysv
 
-# Configure machine-id and divert
+9) Configure machine-id and divert
 
 dbus-uuidgen > /etc/machine-id
 
@@ -79,101 +76,101 @@ dpkg-divert --local --rename --add /sbin/initctl
 
 ln -s /bin/true /sbin/initctl
 
-# Install packages for Live System
+10) Install packages for Live System
 
-apt-get install -y \
-    ubuntu-standard \
-    casper \
-    lupin-casper \
-    discover \
-    laptop-detect \
-    os-prober \
-    network-manager \
-    resolvconf \
-    net-tools \
-    wireless-tools \
-    wpagui \
-    locales \
-    linux-generic
+apt-get install -y ubuntu-standard casper lupin-casper discover laptop-detect os-prober network-manager resolvconf net-tools wireless-tools wpagui locales linux-generic
     
-# Graphical installer
+11) Graphical installer
 
-apt-get install -y \
-    ubiquity \
-    ubiquity-casper \
-    ubiquity-frontend-gtk \
-    ubiquity-slideshow-ubuntu \
-    ubiquity-ubuntu-artwork
+apt-get install -y  ubiquity  ubiquity-casper ubiquity-frontend-gtk ubiquity-slideshow-ubuntu ubiquity-ubuntu-artwork
 
-# install lightdm (simple display manager), gnome-session and gnome-terminal (minimal gnome), xfonts-base(standard fonts for X) ,xserver-xorg(X.Org X server) xinit(X server initialisation tool) firefox(Mozilla Firefox web browser) thunderbird(mail/news client with RSS, chat and integrated spam filter support) nautilus(file manager and graphical shell for GNOME) libreoffice(office productivity suite) gimp(GNU Image Manipulation Program)
+12) install lightdm (simple display manager), gnome-session and gnome-terminal (minimal gnome), xfonts-base(standard fonts for X) ,xserver-xorg(X.Org X server) xinit(X server initialisation tool) firefox(Mozilla Firefox web browser) thunderbird(mail/news client with RSS, chat and integrated spam filter support) nautilus(file manager and graphical shell for GNOME) libreoffice(office productivity suite) gimp(GNU Image Manipulation Program)
 
 apt install lightdm gnome-session gnome-terminal xfonts-base xserver-xorg xinit firefox thunderbird nautilus libreoffice gimp
 
-# install this (for install ppa)
+13) install this (for install ppa)
 
 apt-get install software-properties-common
 
-# install ugene(integrated bioinformatics toolkit)
+14) install ugene(integrated bioinformatics toolkit)
 
- add-apt-repository ppa:iefremov/ppa
- apt-get update
- apt install ugene
+add-apt-repository ppa:iefremov/ppa
+ 
+apt-get update
 
-# install zotero (organize and share your research sources)
+apt install ugene
 
- add-apt-repository ppa:smathot/cogscinl
- apt-get update
- apt install zotero-standalone
+15) install zotero (organize and share your research sources)
 
-# install R (GNU R statistical computation and graphics system)
-
- add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/'
- apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
- apt-get update
- apt-get install r-base r-base-dev
-
-# install RStudio (integrated development environment (IDE) for R)
-
-wget https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.2.5019-amd64.deb
-dpkg -i rstudio-1.2.5019-amd64.deb
-apt install -f
-rm rstudio-1.2.5019-amd64.deb
-
-# update and upgrade software
+add-apt-repository ppa:smathot/cogscinl
 
 apt-get update
+
+apt install zotero-standalone
+
+16) install R (GNU R statistical computation and graphics system)
+
+add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/'
+
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+
+apt-get update
+
+apt-get install r-base r-base-dev
+
+17) install RStudio (integrated development environment (IDE) for R)
+
+wget https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.2.5019-amd64.deb
+
+dpkg -i rstudio-1.2.5019-amd64.deb
+
+apt install -f
+
+rm rstudio-1.2.5019-amd64.deb
+
+18) update and upgrade software
+
+apt-get update
+
 apt-get upgrade
+
 apt-get dist-upgrade
 
-# Remove unused packages
+19) Remove unused packages
 
 apt-get autoremove -y
 
-# Generate locales
+20) Generate locales
 
 dpkg-reconfigure locales
 
-# Reconfigure resolvconf
+21) Reconfigure resolvconf
 
 dpkg-reconfigure resolvconf
 
-# Configure network-manager
+22) Configure network-manager
 
 cat <<EOF > /etc/NetworkManager/NetworkManager.conf
+
 [main]
+
 rc-manager=resolvconf
+
 plugins=ifupdown,keyfile
+
 dns=dnsmasq
 
 [ifupdown]
+
 managed=false
+
 EOF
 
-# Reconfigure network-manager
+23) Reconfigure network-manager
 
 dpkg-reconfigure network-manager
 
-# Cleanup the chroot environment
+24) Cleanup the chroot environment
 
 truncate -s 0 /etc/machine-id
 
@@ -193,29 +190,29 @@ umount /dev/pts
 
 export HISTSIZE=0
 
-# end of CHROOT
-
 exit
 
 sudo umount $HOME/live-ubuntu-from-scratch/chroot/dev
+
 sudo umount $HOME/live-ubuntu-from-scratch/chroot/run
 
-# Create the CD image directory and populate it
+25) Create the CD image directory and populate it
 
 cd $HOME/live-ubuntu-from-scratch
 
-# create 3 directory (casper, isolinux, install) in the directory image
+26) create 3 directory (casper, isolinux, install) in the directory image
 
 mkdir -p image/{casper,isolinux,install}
 
 sudo cp chroot/boot/vmlinuz-**-**-generic image/casper/vmlinuz
+
 sudo cp chroot/boot/initrd.img-**-**-generic image/casper/initrd
 
 cd $HOME/live-ubuntu-from-scratch
 
 touch image/biobuntu
 
-# create menu of live-(DVD or USB)
+27) create menu of live-(DVD or USB)
 
 cat <<EOF > image/isolinux/grub.cfg
 
@@ -242,7 +239,7 @@ initrd /casper/initrd
 }
 EOF
 
-# Create manifest
+28) Create manifest
 
 cd $HOME/live-ubuntu-from-scratch
 
@@ -260,7 +257,7 @@ sudo sed -i '/laptop-detect/d' image/casper/filesystem.manifest-desktop
 
 sudo sed -i '/os-prober/d' image/casper/filesystem.manifest-desktop
 
-# Compress the chroot
+29) Compress the chroot
 
 cd $HOME/live-ubuntu-from-scratch
 
@@ -268,7 +265,7 @@ sudo mksquashfs chroot image/casper/filesystem.squashfs
 
 printf $(sudo du -sx --block-size=1 chroot | cut -f1) > image/casper/filesystem.size
 
-# Create diskdefines
+30) Create diskdefines
 
 cd $HOME/live-ubuntu-from-scratch
 
@@ -284,7 +281,7 @@ cat <<EOF > image/README.diskdefines
 #define TOTALNUM0  1
 EOF
 
-# Create ISO Image for a LiveCD (BIOS + UEFI)
+31) Create ISO Image for a LiveCD (BIOS + UEFI)
 
 cd $HOME/live-ubuntu-from-scratch/image
 
@@ -314,7 +311,7 @@ grub-mkstandalone \
 
 cat /usr/lib/grub/i386-pc/cdboot.img isolinux/core.img > isolinux/bios.img
 
-# Create iso from the image directory using the command-line
+32) Create iso from the image directory using the command-line
 
 sudo xorriso \
    -as mkisofs \
