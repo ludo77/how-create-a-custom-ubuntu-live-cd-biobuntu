@@ -2,6 +2,8 @@
 
 I use this for create my own version ubuntu: https://itnext.io/how-to-create-a-custom-ubuntu-live-from-scratch-dd3b3f213f81
 
+I use jammy version of ubuntu
+
 1) Prerequisites (GNU/Linux Debian/Ubuntu)
 
 sudo apt-get install binutils debootstrap squashfs-tools xorriso grub-pc-bin grub-efi-amd64-bin mtools
@@ -11,7 +13,7 @@ mkdir $HOME/live-ubuntu-from-scratch
 
 2) Bootstrap
 
-sudo debootstrap --arch=amd64 --variant=minbase bionic $HOME/live-ubuntu-from-scratch/chroot http://us.archive.ubuntu.com/ubuntu/
+sudo debootstrap --arch=amd64 --variant=minbase jammy $HOME/live-ubuntu-from-scratch/chroot http://us.archive.ubuntu.com/ubuntu/
  
  
 3) Configure external mount points
@@ -86,7 +88,8 @@ apt-get install -y  ubiquity  ubiquity-casper ubiquity-frontend-gtk ubiquity-sli
 
 12) install lightdm (simple display manager), gnome-session and gnome-terminal (minimal gnome), xfonts-base(standard fonts for X) ,xserver-xorg(X.Org X server) xinit(X server initialisation tool) firefox(Mozilla Firefox web browser) thunderbird(mail/news client with RSS, chat and integrated spam filter support) nautilus(file manager and graphical shell for GNOME) libreoffice(office productivity suite) gimp(GNU Image Manipulation Program)
 
-apt install lightdm gnome-session gnome-terminal xfonts-base xserver-xorg xinit firefox thunderbird nautilus libreoffice gimp
+apt install lightdm gnome-session gnome-terminal xfonts-base xserver-xorg xinit thunderbird nautilus libreoffice gimp imagej vlc python3-biopython
+pip install jupyterlab
 
 13) install this (for install ppa)
 
@@ -94,41 +97,57 @@ apt-get install software-properties-common
 
 14) install ugene(integrated bioinformatics toolkit)
 
-add-apt-repository ppa:iefremov/ppa
- 
-apt-get update
-
 apt install ugene
 
 15) install zotero (organize and share your research sources)
 
-add-apt-repository ppa:smathot/cogscinl
-
-apt-get update
-
-apt install zotero-standalone
+wget "https://www.zotero.org/download/client/dl?channel=release&platform=linux-x86_64" -O zotero64.tar.bz2
+tar -xf zotero64.tar.bz2
+mv Zotero_linux-x86_64 /opt/zotero
+cd /opt/zotero
+./set_launcher_icon
 
 16) install R (GNU R statistical computation and graphics system)
 
-add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/'
-
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
-
-apt-get update
-
-apt-get install r-base r-base-dev
+cd /
+wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | gpg --dearmor -o /usr/share/keyrings/r-project.gpg
+echo "deb [signed-by=/usr/share/keyrings/r-project.gpg] https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/" | tee -a /etc/apt/sources.list.d/r-project.list
+apt install --no-install-recommends r-base r-base-dev
 
 17) install RStudio (integrated development environment (IDE) for R)
 
-wget https://download1.rstudio.org/desktop/bionic/amd64/rstudio-1.2.5019-amd64.deb
+wget https://download1.rstudio.org/electron/jammy/amd64/rstudio-2023.03.0-386-amd64.deb
+apt install -f ./rstudio-2023.03.0-386-amd64.deb
+cd /
 
-dpkg -i rstudio-1.2.5019-amd64.deb
+rm rstudio-2023.03.0-386-amd64.deb zotero64.tar.bz2
 
-apt install -f
+18) install firefox deb (no snap)
 
-rm rstudio-1.2.5019-amd64.deb
+cat <<EOF > /etc/apt/preferences.d/nosnap
+Package: snapd
+Pin: release *
+Pin-Priority: -1
+EOF
 
-18) update and upgrade software
+cat <<EOF> /etc/apt/preferences.d/firefox-for-nosnaps
+Package: firefox*
+Pin: release o=Ubuntu*
+Pin-Priority: -1
+
+Package: *
+Pin: release o=LP-PPA-mozillateam
+Pin-Priority: 99
+EOF
+
+cat <<EOF> /etc/apt/apt.conf.d/50unattended-upgrades-firefox
+Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:${distro_codename}";
+EOF
+
+add-apt-repository ppa:mozillateam/ppa
+apt install firefox
+
+19) update and upgrade software
 
 apt-get update
 
@@ -136,19 +155,19 @@ apt-get upgrade
 
 apt-get dist-upgrade
 
-19) Remove unused packages
+20) Remove unused packages
 
 apt-get autoremove -y
 
-20) Generate locales
+21) Generate locales
 
 dpkg-reconfigure locales
 
-21) Reconfigure resolvconf
+22) Reconfigure resolvconf
 
 dpkg-reconfigure resolvconf
 
-22) Configure network-manager
+23) Configure network-manager
 
 cat <<EOF > /etc/NetworkManager/NetworkManager.conf
 
@@ -166,11 +185,11 @@ managed=false
 
 EOF
 
-23) Reconfigure network-manager
+24) Reconfigure network-manager
 
 dpkg-reconfigure network-manager
 
-24) Cleanup the chroot environment
+25) Cleanup the chroot environment
 
 truncate -s 0 /etc/machine-id
 
@@ -196,11 +215,11 @@ sudo umount $HOME/live-ubuntu-from-scratch/chroot/dev
 
 sudo umount $HOME/live-ubuntu-from-scratch/chroot/run
 
-25) Create the CD image directory and populate it
+26) Create the CD image directory and populate it
 
 cd $HOME/live-ubuntu-from-scratch
 
-26) create 3 directory (casper, isolinux, install) in the directory image
+27) create 3 directory (casper, isolinux, install) in the directory image
 
 mkdir -p image/{casper,isolinux,install}
 
@@ -212,7 +231,7 @@ cd $HOME/live-ubuntu-from-scratch
 
 touch image/biobuntu
 
-27) create menu of live-(DVD or USB)
+28) create menu of live-(DVD or USB)
 
 cat <<EOF > image/isolinux/grub.cfg
 
@@ -250,7 +269,7 @@ initrd /casper/initrd
 
 EOF
 
-28) Create manifest
+29) Create manifest
 
 cd $HOME/live-ubuntu-from-scratch
 
@@ -268,7 +287,7 @@ sudo sed -i '/laptop-detect/d' image/casper/filesystem.manifest-desktop
 
 sudo sed -i '/os-prober/d' image/casper/filesystem.manifest-desktop
 
-29) Compress the chroot
+30) Compress the chroot
 
 cd $HOME/live-ubuntu-from-scratch
 
@@ -276,7 +295,7 @@ sudo mksquashfs chroot image/casper/filesystem.squashfs
 
 printf $(sudo du -sx --block-size=1 chroot | cut -f1) > image/casper/filesystem.size
 
-30) Create diskdefines
+31) Create diskdefines
 
 cd $HOME/live-ubuntu-from-scratch
 
@@ -302,7 +321,7 @@ cat <<EOF > image/README.diskdefines
 
 EOF
 
-31) Create ISO Image for a LiveCD (BIOS + UEFI)
+32) Create ISO Image for a LiveCD (BIOS + UEFI)
 
 cd $HOME/live-ubuntu-from-scratch/image
 
@@ -316,6 +335,6 @@ grub-mkstandalone    --format=i386-pc    --output=isolinux/core.img    --install
 
 cat /usr/lib/grub/i386-pc/cdboot.img isolinux/core.img > isolinux/bios.img
 
-32) Create iso from the image directory using the command-line
+33) Create iso from the image directory using the command-line
 
 sudo xorriso    -as mkisofs    -iso-level 3    -full-iso9660-filenames    -volid "Ubuntu"    -eltorito-boot boot/grub/bios.img    -no-emul-boot    -boot-load-size 4    -boot-info-table    --eltorito-catalog boot/grub/boot.cat --grub2-boot-info  --grub2-mbr /usr/lib/grub/i386-pc/boot_hybrid.img -eltorito-alt-boot -e EFI/efiboot.img  -no-emul-boot  -append_partition 2 0xef isolinux/efiboot.img -output "../biobuntu.iso" -graft-points  "."  /boot/grub/bios.img=isolinux/bios.img  /EFI/efiboot.img=isolinux/efiboot.img
